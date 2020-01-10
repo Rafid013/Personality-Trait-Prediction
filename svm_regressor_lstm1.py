@@ -18,7 +18,6 @@ for fold in range(1, 11):
                              header=None).iloc[:, 1:]
 
         train_y = pd.read_csv('Folds/train_sy_' + trait + '_' + str(fold) + '.csv', delimiter=',')
-        test_y = pd.read_csv('Folds/test_sy_' + trait + '_' + str(fold) + '.csv', delimiter=',')
 
         pipeline = Pipeline(steps=steps)
 
