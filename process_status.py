@@ -24,7 +24,7 @@ def clean_status(statuses):
 def calculate_max_length(statuses):
     max_length = 0
     for status in statuses:
-        length = len(status)
+        length = len(status.split())
         if length > max_length:
             max_length = length
     return max_length

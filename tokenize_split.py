@@ -3,7 +3,7 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import KFold
 from process_status import calculate_max_length, clean_status
-
+import numpy as np
 
 traits = ['AGR', 'CON', 'EXT', 'NEU', 'OPN']
 
@@ -22,17 +22,29 @@ if __name__ == '__main__':
     print(max_length)
     print(vocab_size)
 
+    tokenized_statuses = tokenizer.texts_to_sequences(statuses)
+    padded_statuses = pad_sequences(tokenized_statuses, maxlen=max_length)
+
+    data_features = np.array(data[['NETWORKSIZE', 'BETWEENNESS', 'NBETWEENNESS', 'DENSITY', 'BROKERAGE',
+                                   'NBROKERAGE', 'TRANSITIVITY']])
+
     kfold = KFold(n_splits=10, shuffle=True, random_state=1)
     fold = 1
     for train_idx, test_idx in kfold.split(data):
-        train_x, test_x = data['STATUS'][train_idx], data['STATUS'][test_idx]
-        train_x = tokenizer.texts_to_sequences(train_x)
-        train_x = pad_sequences(train_x, maxlen=max_length)
-        test_x = tokenizer.texts_to_sequences(test_x)
-        test_x = pad_sequences(test_x, maxlen=max_length)
+
+        train_x = padded_statuses[train_idx]
+        test_x = padded_statuses[test_idx]
+
+        train_features = pd.DataFrame(data_features[train_idx])
+        test_features = pd.DataFrame(data_features[test_idx])
 
         pd.DataFrame(train_x).to_csv('Folds/train_x_' + str(fold) + '.csv', sep=',', index=False, header=False)
         pd.DataFrame(test_x).to_csv('Folds/test_x_' + str(fold) + '.csv', sep=',', index=False, header=False)
+
+        pd.DataFrame(train_features).to_csv('Folds/train_features_' + str(fold) + '.csv', sep=',',
+                                            index=False, header=False)
+        pd.DataFrame(test_features).to_csv('Folds/test_features_' + str(fold) + '.csv', sep=',',
+                                           index=False, header=False)
 
         for trait in traits:
             train_cy = data['c' + trait][train_idx]
